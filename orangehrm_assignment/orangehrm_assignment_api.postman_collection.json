@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "Assignment - JSONPlaceholder Users API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://jsonplaceholder.typicode.com"
+    },
+    {
+      "key": "userId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - GET all users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "const users = pm.response.json();",
+              "pm.test('Response contains user data', () => pm.expect(users).to.be.an('array').and.not.empty);",
+              "pm.test('Each user has id, name and email', () => users.forEach(u => { pm.expect(u).to.have.property('id'); pm.expect(u).to.have.property('name'); pm.expect(u).to.have.property('email'); }));",
+              "pm.collectionVariables.set('userId', String(users[0].id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - PUT selected user",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{$randomFirstName}} {{$randomLastName}}\",\n  \"email\": \"{{$randomUserName}}@example.com\",\n  \"company\": {\"name\": \"{{$randomCompanyName}}\"}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is successful', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+              "const data = pm.response.json();",
+              "pm.test('Returned id matches stored id', () => pm.expect(String(data.id)).to.eql(String(pm.collectionVariables.get('userId'))));",
+              "pm.test('Phone is not empty', () => pm.expect(data.phone).to.be.a('string').and.not.empty);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
